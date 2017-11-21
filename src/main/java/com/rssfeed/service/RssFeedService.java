@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Transactional
 public class RssFeedService {
 
     private static final Logger logger = LoggerFactory.getLogger(RssFeedService.class);
@@ -45,17 +47,25 @@ public class RssFeedService {
         return populateFeedItemsList(feed);
     }
 
+    @Transactional
     public void saveOrUpdateRssFeeds(List<FeedItem> itemList) {
         logger.info("Start of save or update feeds");
         for (FeedItem feedItem : itemList) {
-            if (feedItem.getUpdateDate() != null) {
-                FeedItem savedFeedItem = feedRepository
-                        .findFeedItemByPublicationDateAndUri(feedItem.getPublicationDate(), feedItem.getUri());
-                if (savedFeedItem != null) {
-                    feedItem.setId(savedFeedItem.getId());
+
+            FeedItem feedItemFromDb = feedRepository
+                    .findFeedItemByPublicationDateAndUriAndTitle(feedItem.getPublicationDate(), feedItem.getUri(),
+                            feedItem.getTitle());
+            if (feedItemFromDb == null) {
+                feedRepository.save(itemList);
+            }else{
+                if(feedItem.getUpdateDate() != null){
+                    feedItem.setId(feedItemFromDb.getId());
+                    feedRepository.save(itemList);
                 }
             }
-            feedRepository.save(itemList);
+
+
+
         }
         logger.info("End of save or update feeds");
     }

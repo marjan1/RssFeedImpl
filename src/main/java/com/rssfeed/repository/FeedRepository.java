@@ -7,6 +7,6 @@ import java.util.Date;
 
 public interface FeedRepository extends JpaRepository<FeedItem, Short> {
 
-    FeedItem findFeedItemByPublicationDateAndUri(Date publicationDate, String uri);
+    FeedItem findFeedItemByPublicationDateAndUriAndTitle(Date publicationDate, String uri, String title);
 
 }

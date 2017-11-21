@@ -20,7 +20,7 @@ public class RssFeedController {
     @Autowired
     private RssFeedService rssFeedService;
 
-    @Scheduled(fixedRate = 300000)
+    @Scheduled(fixedRate = 8000)
     public void rssFeedsJob() {
         logger.info("Read and save RSS feeds job started");
         List<FeedItem> feedItems;
@@ -39,7 +39,7 @@ public class RssFeedController {
         }
 
         rssFeedService.saveOrUpdateRssFeeds(feedItems);
-        logger.info("End and save RSS feeds job started");
+        logger.info("End and save RSS feeds job end");
     }
 
 }
