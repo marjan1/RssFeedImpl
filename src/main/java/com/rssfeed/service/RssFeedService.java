@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional
 public class RssFeedService {
 
     private static final Logger logger = LoggerFactory.getLogger(RssFeedService.class);
@@ -43,6 +42,9 @@ public class RssFeedService {
         logger.info("Start of reading RSS Feeds ");
         XmlReader reader = new XmlReader(new URL(url));
         SyndFeed feed = new SyndFeedInput().build(reader);
+//        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//        System.out.println(feed);
+//        System.out.println("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
         logger.info("End of reading RSS Feeds");
         return populateFeedItemsList(feed);
     }
@@ -52,19 +54,25 @@ public class RssFeedService {
         logger.info("Start of save or update feeds");
         for (FeedItem feedItem : itemList) {
 
+            logger.info("Get feed from db with publication date = {}, title = {} and URI = {}",
+                    feedItem.getPublicationDate(), feedItem.getTitle(), feedItem.getUri());
+
+            List<FeedItem >feedItemListFromDb = feedRepository
+                    .findAllByUri(feedItem.getUri());
+
             FeedItem feedItemFromDb = feedRepository
-                    .findFeedItemByPublicationDateAndUriAndTitle(feedItem.getPublicationDate(), feedItem.getUri(),
-                            feedItem.getTitle());
+                    .findFeedItemByUri(feedItem.getUri());
             if (feedItemFromDb == null) {
+                logger.info("New feed with URI = {} saved in DB", feedItem.getUri());
                 feedRepository.save(itemList);
-            }else{
-                if(feedItem.getUpdateDate() != null){
+            } else {
+                if (feedItem.getUpdateDate() != null) {
+                    logger.info("Existing feed with  URI = {} updated in DB",
+                            feedItem.getUri());
                     feedItem.setId(feedItemFromDb.getId());
-                    feedRepository.save(itemList);
+                    feedRepository.save(feedItem);
                 }
             }
-
-
 
         }
         logger.info("End of save or update feeds");
@@ -72,11 +80,13 @@ public class RssFeedService {
 
     private List<FeedItem> populateFeedItemsList(SyndFeed feed) {
         List<FeedItem> itemList = new ArrayList<>();
+
         SyndEntry[] syndEntriesArray = feed.getEntries().toArray(new SyndEntry[feed.getEntries().size()]);
 
         int numberOfFeeds = syndEntriesArray.length < maxNumberOfFeeds ? syndEntriesArray.length : maxNumberOfFeeds;
 
         for (int i = 0; i < numberOfFeeds; i++) {
+
             FeedItem feedItem = initFeedItem(syndEntriesArray[i]);
             itemList.add(feedItem);
         }
