@@ -14,6 +14,5 @@ public class ReaderApplication {
     public static void main(String[] args) {
         logger.info("Start of ReaderApplication");
         SpringApplication.run(ReaderApplication.class, args);
-        logger.info("End of ReaderApplication");
     }
 }

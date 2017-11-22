@@ -1,5 +1,8 @@
 package com.rssfeed.model;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -15,7 +18,7 @@ public class FeedItem implements Serializable {
 
     private String title;
 
-    @Column(length = 9000000)
+    @Column(length = 10000)
     private String description;
 
     private Date publicationDate;
@@ -81,5 +84,26 @@ public class FeedItem implements Serializable {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+
+        if (o == null || getClass() != o.getClass())
+            return false;
+
+        FeedItem feedItem = (FeedItem) o;
+
+        return new EqualsBuilder().append(title, feedItem.title).append(description, feedItem.description)
+                .append(publicationDate, feedItem.publicationDate).append(updateDate, feedItem.updateDate)
+                .append(uri, feedItem.uri).append(logo, feedItem.logo).isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37).append(title).append(description).append(publicationDate).append(updateDate)
+                .append(uri).append(logo).toHashCode();
     }
 }
